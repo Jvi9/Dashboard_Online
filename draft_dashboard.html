@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard_BalloonTech</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <!-- Leaflet Omnivore for KML parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.4/leaflet-omnivore.min.js"></script>
+    <!-- JSZip for KMZ handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
+     <!-- CHECK REPETITION LATER -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        /* TopSection features */
+        .big-container-wrapper1 {
+            width: 100%;
+            height: 2%;
+            /*background-color:#13314e ;*/
+            background: linear-gradient(90deg, #13314e 0%, #7091af 100%);
+            float: left;
+            color: aliceblue;
+            border: none;
+            justify-content: center;
+            align-items: center;
+        }
+        .big-container-wrappermap {
+            width: 50%;
+            height: 100vh;
+            background-color:#fdfdfd ;
+            float: left;
+            color: rgb(7, 80, 145);
+            border: 0.5px solid #fff;    
+        }
+        .big-container-wrapperanc {
+            width: 30%;
+            height: 100vh;
+            background-color:#fdfdfd ;
+            float: left;
+            justify-content: center;
+            color: rgb(7, 80, 145);
+            border: 0.5px solid #fff;    
+        }
+        .container-Photo {
+            width: 100%;
+            height: 50%;
+            background-color:#fdfdfd ;
+            float: left;
+            color: rgb(7, 80, 145);
+            justify-content: center;
+            align-items: center;
+            border: 0.5px solid #fff;
+            border-image-width: auto;    
+        }
+        .container-Photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: auto; /*to fit the bounds can also be: cover*/
+        }
+        .big-container-wrapperother {
+            width: 20%;
+            height: 100vh;
+            overflow-y: auto;
+            background-color:#fdfdfd ;
+            float: left;
+            color: rgb(7, 80, 145);
+            border: 0.5px solid #fdfdfd;    
+        }
+        .container-Tel {
+            width: 100%;
+            height: 50%;
+            overflow-y: auto;
+            background-color:#fdfdfd ;
+            float: left;
+            color: rgb(7, 80, 145);
+            border: 0.5px solid #fff;    
+        }
+        #Map {
+            height: 85vh;
+            width: 100%;
+            position: relative;
+        }
+        .image-container {
+            overflow: hidden;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        #zoomable-image {
+            transition: transform 0.1s ease; /* Smooth zoom transition */
+            max-width: 100%;
+            height: auto;
+            transform-origin: center center;
+        }
+        /* Navbar styling */
+        .navbar {
+            background-color: #13314e ;
+            padding: 0.10em;
+        }
+
+        /* Tab list styling */
+        .nav-tabs {
+            display: flex;
+            list-style-type: none;
+            justify-content: center;
+        }
+
+        /* Individual tab styling */
+        .nav-tabs li {
+            margin: 0 1px;
+        }
+
+        .nav-tabs a {
+            text-decoration: none;
+            color: #fff;
+            padding: 0.5em 1em;
+            font-size: 1em;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Active tab style */
+        .nav-tabs a.active {
+            background-color: #00bfa6;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Hover effect */
+        .nav-tabs a:hover {
+            background-color: #0056b3;
+        }
+        #microloon-data strong, #trajectory-data strong, #telemetry-data strong {
+            font-size: 13px; /* Larger font for labels */
+            color: #333; /* Different color for labels */
+        }
+
+        #microloon-data p, #trajectory-data p , #telemetry-data p {
+            font-size: 13px; /* Smaller font for values */
+            color: #555; /* Muted color for values */
+        }    
+        #desired-data strong {
+            font-size: 13px; /* Larger font for labels */
+            color: #c72b2b; /* Different color for labels */
+        }
+
+        #desired-data p {
+            font-size: 13px; /* Smaller font for values */
+            color: #c72b2b; /* Muted color for values */
+        }
+        .data-section {
+            margin-bottom: 1px; /* Adds space between the sections */
+            padding: 1px;       /* Optional: Add padding for better visual separation */
+            border: 1px solid #ddd; /* Optional: Add a border to distinguish sections */
+            border-radius: 5px;  /* Optional: Rounded corners for a polished look */
+            background-color: #f9f9f9; /* Optional: Light background for visibility */
+        }
+        .green-text {
+            color: green;
+            font-weight: bold;
+        }
+        .red-text {
+            color: red;
+            font-weight: bold;
+        }
+
+        /* General styling for the range indicators */
+        .range-indicator {
+            font-weight: bold;
+            transition: all 0.3s ease-in-out;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* Green for minimum value */
+        .green-text {
+            color: #28a745;
+        }
+
+        /* Red for maximum value */
+        .red-text {
+            color: #dc3545;
+        }
+
+        /* FROM THIS IS A TEST OF STYLING *
+        /* Styling for range label (Min/Max) */
+        .range-label {
+            font-size: 0.8em;
+            color: #666; /* Grey color for the label */
+            margin-left: 5px;
+        }
+
+        /* Add subtle hover effect for interactivity */
+        .range-indicator:hover {
+            transform: scale(1.1);
+        }
+
+        /* Optional: Add a small box around the range for better visibility */
+        .range-indicator {
+            padding: 0.2em 0.5em;
+            border-radius: 3px;
+            border: 1px solid transparent;
+            display: inline-block;
+        }
+
+        /* Small circle indicator next to the value */
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-left: 10px;
+            transition: background-color 0.3s ease;
+        }
+        .microloon-box {
+            border: 1px solid #ddd; /* Light gray border */
+            border-radius: 8px; /* Rounded corners */
+            padding: 1 px; /* Space inside the box */
+            background-color: #f9f9f9; /* Subtle background color */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional shadow for depth */
+            margin: 1 px; /* Space around the box */
+            font-family: Arial, sans-serif; /* Consistent font styling */
+        }
+
+        .microloon-box p {
+            margin: 8px 0; /* Space between paragraphs */
+            line-height: 1.75; /* Better readability */
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%; /* Circle */
+            margin-left: 5px; /* Space after text */
+        }
+
+        .range-indicator {
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .green-text {
+            color: #28a745;
+        }
+
+        .red-text {
+            color: #dc3545;
+        }
+
+        .range-label {
+            font-weight: normal;
+            margin-left: 3px;
+            font-size: 0.75em;
+            color: #555;
+        }
+    </style>
+</head>
+<nav class="navbar">
+    <ul class="nav-tabs">
+        <li><a href="{{ url_for('index') }}" class="active">Dashboard 1</a></li>
+        <li><a href="{{ url_for('dashboard2') }}">Dashboard 2</a></li>
+    </ul>
+</nav>
+<body>
+    <!-- This is the topsection -->
+    <div class="big-container-wrapper1 -fluid" id="TopSection">
+        <div class="row">
+            <div class="col">
+                <h4>Balloon Tech Field Control Dashboard</h4>
+            </div>
+            <div class="col" style="display: flex; align-items: center; height: 100%; justify-content: center;">
+                <p>Local Time: <span id="local-time"></span></p>
+            </div>
+            <div class="col" style="display: flex; align-items: center; height: 100%; justify-content: center;">
+                <p>PST Time: <span id="pst-time"></span></p>    
+            </div>
+            <script>
+                // Function to display current time in local and PST timezone
+                function displayTimes() {
+                    // Get local time
+                    const localTime = new Date();
+                    document.getElementById('local-time').innerText = localTime.toLocaleString();
+        
+                    // Get PST time directly
+                    const pstTime = new Intl.DateTimeFormat('en-US', {
+                        timeZone: 'America/Los_Angeles',
+                        hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true,
+                        month: 'numeric', day: 'numeric', year: 'numeric'
+                    }).format(localTime);
+                    document.getElementById('pst-time').innerText = pstTime;
+                }
+        
+                // Call function to display times
+                displayTimes();
+        
+                // Optional: Update times every minute
+                setInterval(displayTimes, 1000);
+            </script>
+        </div>    
+    </div>
+
+    <!-- This is the container for the MAP visualizator  -->
+     <div class="big-container-wrappermap -fluid" id="Mapviewer">
+        <p class="h4 text-center mb-3">Map/KML & KMZ Viewer</p>
+
+        <!-- File Input -->
+        <div class="d-flex justify-content-center mb-3">
+            <input type="file" id="fileInput" class="form-control w-50" accept=".kml,.kmz" multiple />
+            <button id="toggleRefreshButton" class="btn btn-secondary ms-2">Stop Refresh</button>
+        </div>
+    
+        <!-- Map container -->
+        <div id="Map" style="height: 600px; border: 1px solid #ccc; margin-bottom: 15px;"></div>
+    
+        <!-- KML/KMZ file list -->
+        <div id="kmlFileList" class="list-group"></div>
+    
+        <script>
+            // KML viewer map initialization
+
+            var openStreetMapLayerKML = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            });
+
+            var politicalMapLayerKML = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://carto.com/">CARTO</a> contributors'
+            });
+
+            var topoLayerKML = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors'
+            });
+
+            var satelliteLayerKML = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri, USGS, NASA, <a href="https://www.esri.com/">Esri</a>'
+            });            
+            // Create the map and set the default view
+            var kmlMap = L.map('Map').setView([0, 0], 2);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18,
+            }).addTo(kmlMap);
+
+            L.control.layers({
+                "OpenStreetMap": openStreetMapLayerKML,
+                "Political Map": politicalMapLayerKML,
+                "Topographic": topoLayerKML,
+                "Satellite": satelliteLayerKML
+            }).addTo(kmlMap);
+
+            var kmlLayers = {}; // Object to store KML layers by file name
+            var firstKMLLoaded = false; // Flag to center on the first file loaded
+    
+            // Handle file input change event
+            document.getElementById('fileInput').addEventListener('change', function(event) {
+                var files = event.target.files;
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    if (file.name.endsWith('.kml')) {
+                        handleKMLFile(file);
+                    } else if (file.name.endsWith('.kmz')) {
+                        handleKMZFile(file);
+                    }
+                }
+            });
+    
+            // Function to handle KML file
+            function handleKMLFile(file) {
+                var reader = new FileReader();
+    
+                reader.onload = function(e) {
+                    var kmlData = e.target.result;
+                    var newKmlLayer = omnivore.kml.parse(kmlData);
+    
+                    // Store the KML layer by file name, but don't add to map yet
+                    kmlLayers[file.name] = {
+                        layer: newKmlLayer,
+                        added: false
+                    };
+    
+                    // Display the KML file name and button in the list
+                    displayFileEntry(file.name);
+                };
+    
+                reader.readAsText(file);
+            }
+    
+            // Function to handle KMZ file
+            function handleKMZFile(file) {
+                var reader = new FileReader();
+    
+                reader.onload = function(e) {
+                    var zip = new JSZip();
+    
+                    zip.loadAsync(e.target.result).then(function(zip) {
+                        zip.file(/.*\.kml$/i)[0].async('string').then(function(kmlData) {
+                            var newKmlLayer = omnivore.kml.parse(kmlData);
+    
+                            // Store the KML layer by file name
+                            kmlLayers[file.name] = {
+                                layer: newKmlLayer,
+                                added: false
+                            };
+    
+                            // Display the KMZ file name and button in the list
+                            displayFileEntry(file.name);
+                        });
+                    });
+                };
+    
+                reader.readAsArrayBuffer(file);
+            }
+    
+            // Function to display the KML/KMZ file name and "Add to Map" button
+            function displayFileEntry(fileName) {
+                var kmlFileList = document.getElementById('kmlFileList');
+    
+                var fileEntry = document.createElement('div');
+                fileEntry.className = 'list-group-item d-flex justify-content-between align-items-center';
+                fileEntry.textContent = fileName;
+    
+                // Add "Add to Map" button
+                var addButton = document.createElement('button');
+                addButton.className = 'btn btn-primary btn-sm';
+                addButton.textContent = 'Add to Map';
+                addButton.onclick = function() {
+                    addLayerToMap(fileName);
+                };
+    
+                fileEntry.appendChild(addButton);
+    
+                // Add event listener for clicking the file name
+                fileEntry.addEventListener('click', function() {
+                    centerOnLayer(fileName);
+                });
+    
+                kmlFileList.appendChild(fileEntry);
+            }
+            // Function to fetch and automatically add all KML/KMZ files to the map
+            function loadAllMaps() {
+                fetch('/load-all-maps')  // Fetch the list of files from the Flask backend
+                    .then(response => response.json())  // Parse JSON response
+                    .then(files => {
+                        files.forEach(fileName => {
+                            // Construct the file URL
+                            var layerUrl = '/static/KMLmaps/' + fileName;
+
+                            if (fileName.endsWith('.kml')) {
+                                // Load KML file using omnivore
+                                var newKmlLayer = omnivore.kml(layerUrl)
+                                    .on('ready', function() {
+                                        // Add the layer to the map
+                                        kmlMap.addLayer(newKmlLayer);
+
+                                        // Center map on first KML loaded
+                                        if (!firstKMLLoaded) {
+                                            kmlMap.fitBounds(newKmlLayer.getBounds());
+                                            firstKMLLoaded = true;  // Mark first KML loaded
+                                        }
+                                    })
+                                    .on('error', function() {
+                                        console.error("Error loading KML file:", fileName);
+                                    });
+
+                                // Store layer in kmlLayers object for later reference
+                                kmlLayers[fileName] = { layer: newKmlLayer, added: true };
+
+                            } else if (fileName.endsWith('.kmz')) {
+                                // Load KMZ file using JSZip and omnivore
+                                JSZipUtils.getBinaryContent(layerUrl, function(err, data) {
+                                    if (err) {
+                                        console.error("Error loading KMZ file:", fileName);
+                                        return;
+                                    }
+                                    var zip = new JSZip();
+                                    zip.loadAsync(data).then(function(zip) {
+                                        var kmlFile = zip.file(/.*\.kml$/i)[0]; // Get the KML file in the KMZ
+                                        if (kmlFile) {
+                                            kmlFile.async('string').then(function(kmlData) {
+                                                var newKmlLayer = omnivore.kml.parse(kmlData)
+                                                    .on('ready', function() {
+                                                        // Add the layer to the map
+                                                        kmlMap.addLayer(newKmlLayer);
+                                                    })
+                                                    .on('error', function() {
+                                                        console.error("Error loading KML from KMZ:", fileName);
+                                                    });
+
+                                                // Store layer in kmlLayers object for later reference
+                                                kmlLayers[fileName] = { layer: newKmlLayer, added: true };
+                                            });
+                                        } else {
+                                            console.error("No KML file found in KMZ:", fileName);
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    })
+                    .catch(error => console.error('Error loading maps:', error));
+            }
+
+
+            // Call the function to load all maps when the page loads
+            window.onload = function() {
+                loadAllMaps();  // Auto-load KML/KMZ files on page load
+            };   
+            // Function to add the KML/KMZ layer to the map
+            function addLayerToMap(fileName) {
+                var layerEntry = kmlLayers[fileName];
+                if (!layerEntry.added) {
+                    layerEntry.layer.addTo(kmlMap);
+    
+                    // If it's the first added KML/KMZ, center the map
+                    if (!firstKMLLoaded) {
+                        kmlMap.fitBounds(layerEntry.layer.getBounds());
+                        firstKMLLoaded = true; // Mark first KML/KMZ as loaded
+                    }
+    
+                    layerEntry.added = true; // Mark as added to the map
+                }
+            }
+    
+            // Function to center the map on the corresponding KML/KMZ layer
+            function centerOnLayer(fileName) {
+                var layerEntry = kmlLayers[fileName];
+                if (layerEntry.added) {
+                    kmlMap.fitBounds(layerEntry.layer.getBounds());
+                } else {
+                    alert("Please add the file to the map first.");
+                }
+            }
+                    // Function to fetch GPS data and update the map
+            
+             /*let latestImageUrl = ''; // Global variable to store the latest image URL*/
+            function fetchGpsData() {
+                fetch('/api/gps-data')
+                    .then(response => response.json())
+                    .then(gpsData => {
+                        console.log(gpsData);  // Log fetched data for debugging
+
+                        /*// Clear existing markers
+                        map.eachLayer(function (layer) {
+                            if (layer instanceof L.Marker) {
+                                map.removeLayer(layer);
+                            }
+                        });*/
+
+                        // Loop through the GPS data and add markers
+                        gpsData.forEach(function(data) {
+                            if (data.imageUrl) { // Change here from img_url to imageUrl
+                                console.log(`Adding marker for: ${data.photo_name}, Lat: ${data.lat}, Lon: ${data.lon}`); // Debugging coordinates
+                                // Add the marker for the GPS location
+                                var marker = L.marker([data.lat, data.lon]).addTo(kmlMap);
+                                
+                                // Bind the popup with a small image and additional information
+                                marker.bindPopup(
+                                    `<strong>${data.photo_name}</strong><br>` +
+                                    `<img src="${data.imageUrl}" class="popup-image" style="width: 100px; height: auto;"><br>` +
+                                    `Latitude: ${data.lat.toFixed(5)}<br>` +
+                                    `Longitude: ${data.lon.toFixed(5)}<br>` +
+                                    `Altitude: ${data.alt.toFixed(2)} meters`
+                                );
+
+                                // When clicking the marker, show the corresponding larger image in the right container
+                                marker.on('click', function() {
+                                    document.getElementById('large-photo').src = data.imageUrl; // Change here from img_url to imageUrl
+                                });
+                            } else {
+                                console.warn(`Image URL not found for: ${data.photo_name}`);
+                            }
+                        });
+                        //zoom the last point
+                        if (gpsData.length > 0) {
+                        var lastPoint = gpsData[gpsData.length - 1];
+                        var zoomLevel = 15; // Adjust the zoom level here
+                        kmlMap.setView([lastPoint.lat, lastPoint.lon], zoomLevel);
+                    }
+                    })
+                    .catch(error => console.error('Error fetching GPS data:', error));
+            }
+
+            // Fetch data initially and set an interval to fetch every 5 seconds
+            fetchGpsData();
+            let refreshInterval = setInterval(fetchGpsData, 1000);  // Start the refresh interval by default
+            let isRefreshing = true;  // Track whether refreshing is enabled
+
+            // Toggle function for starting and stopping the refresh interval
+            document.getElementById('toggleRefreshButton').addEventListener('click', function() {
+                if (isRefreshing) {
+                    clearInterval(refreshInterval);  // Stop refreshing
+                    this.textContent = 'Start Refresh';  // Change button label
+                } else {
+                    refreshInterval = setInterval(fetchGpsData, 1000);  // Start refreshing again
+                    this.textContent = 'Stop Refresh';  // Change button label
+                }
+                isRefreshing = !isRefreshing;  // Toggle the refreshing state
+            });
+
+        </script>
+    </div>
+
+    <!-- This is the container for the ancillary visualizator  -->
+    <div class="big-container-wrapperanc -fluid">
+        <div class="container-Photo -wrapper">
+            <!--<img id="large-photo" src="" alt="Click a marker to view the photo" />-->
+            <button id="refresh-latest-btn">Show Latest Image</button>
+            <img id="large-photo" src="" alt="Click a marker to view the photo" />
+            <script>
+                let markerClicked = false;  // Flag to track if a marker has been clicked
+                let latestImageUrl = "";    // Store the latest image URL to show when needed
+                let latestImageInterval;    // Variable to store the interval for refreshing the image
+
+                // Function to fetch the latest image URL from Flask
+                function fetchLatestImage() {
+                    fetch('/latest-image')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.latest_image_url) {
+                                latestImageUrl = data.latest_image_url;
+                                // If no marker has been clicked, show the latest image
+                                if (!markerClicked) {
+                                    document.getElementById('large-photo').src = latestImageUrl;
+                                }
+                            } else {
+                                console.error('No latest image found.');
+                            }
+                        })
+                        .catch(error => console.error('Error fetching latest image:', error));
+                }
+
+                // Function to start the periodic refresh of the latest image
+                function startRefreshingLatestImage() {
+                    if (latestImageInterval) {
+                        clearInterval(latestImageInterval);  // Clear any existing interval
+                    }
+                    latestImageInterval = setInterval(fetchLatestImage, 5000);  // Start refreshing the image every 5 seconds
+                }
+
+                // Call this function when the marker is clicked and pass the marker's image URL
+                function onMarkerClick(imageUrl) {
+                    markerClicked = true;  // Stop showing the latest image
+                    clearInterval(latestImageInterval);  // Stop the periodic refresh
+                    document.getElementById('large-photo').src = imageUrl;  // Display the marker's image
+                }
+
+                // Button to refresh and start showing the latest image again
+                document.getElementById('refresh-latest-btn').addEventListener('click', function() {
+                    markerClicked = false;  // Reset the markerClicked flag
+                    fetchLatestImage();  // Immediately show the latest image
+                    startRefreshingLatestImage();  // Start periodic updates
+                });
+
+                // Initialize the page by loading the latest image and start periodic updates
+                window.onload = function() {
+                    fetchLatestImage();  // Load the latest image once when the page loads
+                    startRefreshingLatestImage();  // Start periodic refresh of the latest image
+                };
+
+            </script>
+        </div>
+        <div class="container-Photo -wrapper">
+            <!--<h4>Graph Altitude vs Time</h4> -->
+            <div class="image-container">
+                {% if plot_exists %}
+                <!--<img id="zoomable-image" src="{{ url_for('static', filename='altitude_vs_time_plot.png') }}" alt="Altitude vs Time Plot">-->
+                <iframe id="plotFrame" src="{{ url_for('root_file', filename='altitude_vs_time_plot.html') }}" width="100%" height="300px" frameborder="0" onerror="this.style.display='none';"></iframe>   
+                {% else %}
+                <p id="iframe-error" style="display: none; color: gray;">Plot could not be loaded.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <script>
+        let lastModifiedTime = {{ last_modified_time }};
+        
+        function checkForUpdates() {
+            // Send an AJAX request to the server to get the latest timestamp
+            fetch('/check-plot-update')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.last_modified_time !== lastModifiedTime) {
+                        // If the timestamp has changed, reload the iframe
+                        var iframe = document.getElementById('plotFrame');
+                        iframe.src = iframe.src;  // Refresh iframe content
+                        lastModifiedTime = data.last_modified_time;  // Update the lastModifiedTime
+                    }
+                });
+        }
+    
+        // Check for updates every second
+        setInterval(checkForUpdates, 1000);
+    </script>  
+
+    </div>
+    <!-- This is the container for the other info  -->
+    <div class="big-container-wrapperother -fluid" id="Mapviewer">
+        <div class="container-Tel -wrapper">
+            <h5>Balloon info in real time</h5>
+            <div class="row">
+                <!--<div class="col" id="microloon-data"></div>-->
+                <div class="col" id="telemetry-data">  </div>
+                <div class="col">
+                    <div id="trajectory-data" ></div>
+                    <div id="desired-data" class="data-section"></div>
+                </div>              
+            </div>
+        <script>
+                const telemetryLimits = {
+                    therm_1: { min: 0, max: 99 },
+                    therm_2: { min: 0, max: 99 },
+                    therm_3: { min: -3, max: 3 },
+                    therm_4: { min: 0, max: 99 },
+                    yaw_degree: { min: 0, max: 99 },
+                    pitch_degree: { min: 0, max: 99 },
+                    yaw_pn: { min: 0, max: 99 },
+                    pitch_pn: { min: 0, max: 99 },
+                    heading: { min: 0, max: 99 },
+                    course: { min: 0, max: 99 }
+                };
+                // Function to TEST
+                /*function getThermistorStatusColor(value, min, max) {
+                    if (value < min) {
+                        return "green"; // Below minimum
+                    } else if (value > max) {
+                        return "red"; // Above maximum
+                    } else if (value >= min && value <= max) {
+                        return "blue"; // Within range
+                    }
+                }*/
+
+                function getThermistorStatusColor(value, min, max) {
+                    // Calculate the one-third intervals for the range
+                    const range = max - min;
+                    const third = range / 3;
+
+                    if (value < min + third) {
+                        return "green"; // Value is in the lower third (0 to 3)
+                    } else if (value < min + 2 * third) {
+                        return "blue"; // Value is in the middle third (4 to 8)
+                    } else if (value <= max) {
+                        return "red"; // Value is in the upper third (9 to 12)
+                    }
+                    return "gray"; // Default color if the value is outside the range (error handling)
+                }
+                // Function to fetch the latest telemetry data
+                function fetchLatestMicroloon() {
+                $.ajax({
+                    url: "/latest-microloon-data",
+                    method: "GET",
+                    success: function(data) {
+                        if (data.error) {
+                            $("#microloon-data").text("No microloon data available.");
+                        } else {
+                            $("#microloon-data").html(`
+                                <div class="row">
+                                    <div class="row-md-6">
+                                        <p><strong>Timestamp:</strong> ${data.timestamp}</p>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <p><strong>Thermistor1:</strong> ${parseFloat(data.therm_1).toFixed(2)} <span class="status-indicator" style="background-color: ${getThermistorStatusColor(data.therm_1, telemetryLimits.therm_1.min, telemetryLimits.therm_1.max)};"></span><br>
+                                            (<strong>Range:</strong>
+                                            <span class="green-text">${telemetryLimits.therm_1.min}</span> – 
+                                            <span class="red-text">${telemetryLimits.therm_1.max}</span>)</p>
+                                        <p><strong>Thermistor2:</strong> ${parseFloat(data.therm_2).toFixed(2)}<br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.therm_1.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.therm_1.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</p>
+                                        <p><strong>Thermistor3:</strong> ${parseFloat(data.therm_3).toFixed(2)}
+                                                <span class="status-indicator" style="background-color: ${getThermistorStatusColor(data.therm_3, telemetryLimits.therm_3.min, telemetryLimits.therm_3.max)};"></span></p>
+                                        <p><strong>Thermistor4:</strong> ${parseFloat(data.therm_4).toFixed(2)}</p>
+                                    </div>
+                                    <div class="col">
+                                        <p><strong>Yaw:</strong> ${parseFloat(data.yaw).toFixed(2)}°</p>
+                                        <p><strong>Pitch:</strong> ${parseFloat(data.pitch).toFixed(2)}°</p>
+                                        <p><strong>Heading:</strong> ${parseFloat(data.heading).toFixed(2)}</p>
+                                        <p><strong>Course:</strong> ${parseFloat(data.course).toFixed(2)}</p>
+                                    </div>
+                                </div>
+
+                            `);
+                        }
+                    },
+                    error: function() {
+                        $("#microloon-data").text("Error loading microloon data.");
+                    }
+                });
+            }
+                // Function to fetch the latest telemetry data
+                function fetchLatestTrajectory() {
+                $.ajax({
+                    url: "/latest-traj-data",
+                    method: "GET",
+                    success: function(data) {
+                        if (data.error) {
+                            $("#trajectory-data").text("No trajectory data available.");
+                        } else {
+                            $("#trajectory-data").html(`
+                                <p><strong>Timestamp:</strong> ${data.timestamp}</p>
+                                <p><strong>Yaw(+/-):</strong> ${parseFloat(data.yaw).toFixed(2)}</p>
+                                <p><strong>Pitch(+/-):</strong> ${parseFloat(data.pitch).toFixed(2)}</p>
+
+                            `);
+                        }
+                    },
+                    error: function() {
+                        $("#trajectory-data").text("Error loading trajectory data.");
+                    }
+                });
+            }
+                // Function to fetch the latest Desired data
+                function fetchLatestDesired() {
+                $.ajax({
+                    url: "/latest-desired-data",
+                    method: "GET",
+                    success: function(data) {
+                        if (data.error) {
+                            $("#desired-data").text("No desired data available.");
+                        } else {
+                            $("#desired-data").html(`
+                                <p><strong>Timestamp:</strong> ${data.timestamp}</p>
+                                <!--<p><strong>Heading:</strong> ${parseFloat(data.heading).toFixed(2)}</p>-->
+                                <!--<p><strong>Position:</strong> ${data.position}</p>-->
+                                <!--<p><strong>Alt:</strong> ${parseFloat(data.alt).toFixed(2)}</p>-->
+                                <p><strong>Desired Gumball Yaw:</strong> ${parseFloat(data.desired_gumball_yaw).toFixed(2)}</p>
+                                <p><strong>Desired Gumball Pitch:</strong> ${parseFloat(data.desired_gumball_pitch).toFixed(2)}</p>
+                                <!--<p><strong>Poi:</strong> ${data.poi}</p>-->
+
+                            `);
+                        }
+                    },
+                    error: function() {
+                        $("#desired-data").text("Error loading desired data.");
+                    }
+                });
+            }
+            // Fetch telemetry data every 1 seconds
+            setInterval(fetchLatestTrajectory, 500);
+            // Fetch telemetry data every 1 seconds
+            setInterval(fetchLatestDesired, 500);    
+            // Fetch telemetry data every 1 seconds
+            setInterval(fetchLatestMicroloon, 500);
+            // Fetch telemetry data when the page loads
+            fetchLatestMicroloon();    
+            // Fetch telemetry data when the page loads
+            fetchLatestTrajectory();    
+            // Fetch telemetry data when the page loads
+            fetchLatestDesired();
+
+        </script>    
+        </div>
+        <div class="container-Tel -wrapper">
+            <h5>Health information</h5>
+            <div id="microloon-data" class="microloon-box"></div>
+            <!--<div id="telemetry-data">  </div>-->
+            <!--<h4>Last photo canon information</h4>-->
+        </div>
+        <script>
+            // Function to fetch the latest telemetry data
+            function fetchLatestTelemetry() {
+                $.ajax({
+                    url: "/latest-balloon-data",
+                    method: "GET",
+                    success: function(data) {
+                        if (data.error) {
+                            $("#telemetry-data").text("No telemetry data available.");
+                        } else {
+                            $("#telemetry-data").html(`
+                                <p><strong>Timestamp:</strong> ${data.timestamp}</p>
+                                <p><strong>Latitude:</strong> ${parseFloat(data.latitude).toFixed(4)}°</p>
+                                <p><strong>Longitude:</strong> ${parseFloat(data.longitude).toFixed(4)}°</p>
+                                <p><strong>Altitude:</strong> ${parseFloat(data.altitude).toFixed(2)} meters</p>
+                                <p><strong>Groundspeed:</strong> ${parseFloat(data.speed).toFixed(3)} m/s</p>
+                                `);
+                        }
+                    },
+                    error: function() {
+                        $("#telemetry-data").text("Error loading telemetry data.");
+                    }
+                });
+            }
+    
+            // Fetch telemetry data every 1 seconds
+            setInterval(fetchLatestTelemetry, 1000);
+            // Fetch telemetry data when the page loads
+            fetchLatestTelemetry();
+        </script>  
+     </div>          
+</body>
