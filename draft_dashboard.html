@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard_BalloonTech</title>
+    <title>Dashboard BalloonTech</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <!-- Leaflet CSS -->
@@ -20,6 +20,17 @@
     <script src='https://api.tiles.mapbox.com/mapbox.js/plugins/leaflet-omnivore/v0.3.1/leaflet-omnivore.min.js'></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.0.2/jszip-utils.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/leaflet-omnivore@0.3.1/leaflet-omnivore.min.js"></script>
+    <!-- Include Leaflet -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+
+    <!-- Include leaflet-omnivore for KML/KMZ support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-omnivore/0.3.2/leaflet-omnivore.min.js"></script>
+
+
     <style>
         /* TopSection features */
         .big-container-wrapper1 {
@@ -73,7 +84,7 @@
             background-color:#fdfdfd ;
             float: left;
             color: rgb(7, 80, 145);
-            border: 0.5px solid #fdfdfd;    
+            border: 0.25px solid #fdfdfd;    
         }
         .container-Tel {
             width: 100%;
@@ -159,10 +170,10 @@
             color: #c72b2b; /* Muted color for values */
         }
         .data-section {
-            margin-bottom: 1px; /* Adds space between the sections */
-            padding: 1px;       /* Optional: Add padding for better visual separation */
-            border: 1px solid #ddd; /* Optional: Add a border to distinguish sections */
-            border-radius: 5px;  /* Optional: Rounded corners for a polished look */
+            margin: 0px; /* Adds space between the sections */
+            padding: 0 px;       /* Optional: Add padding for better visual separation */
+            border: 0.25px solid #ddd; /* Optional: Add a border to distinguish sections */
+            border-radius: 3px;  /* Optional: Rounded corners for a polished look */
             background-color: #f9f9f9; /* Optional: Light background for visibility */
         }
         .green-text {
@@ -190,6 +201,7 @@
         /* Red for maximum value */
         .red-text {
             color: #dc3545;
+            font-weight: bold;
         }
 
         /* FROM THIS IS A TEST OF STYLING *
@@ -258,6 +270,7 @@
 
         .red-text {
             color: #dc3545;
+            font-weight: bold;
         }
 
         .range-label {
@@ -266,6 +279,13 @@
             font-size: 0.75em;
             color: #555;
         }
+        .text-buffer {
+            padding: 0.5px 0.5px;  /* Reduced padding to give a slight space */
+            background-color: rgba(255, 255, 255, 0.7); /* Slightly transparent white background */
+            border-radius: 6px; /* Optional: a very subtle rounding of corners */
+            display: inline-block;
+        }
+
     </style>
 </head>
 <nav class="navbar">
@@ -275,17 +295,20 @@
     </ul>
 </nav>
 <body>
-    <!-- This is the topsection -->
+    <!-- This is the topsection, generalities -->
     <div class="big-container-wrapper1 -fluid" id="TopSection">
         <div class="row">
             <div class="col">
-                <h4>Balloon Tech Field Control Dashboard</h4>
+                <h4>Balloon Tech Dashboard</h4>
             </div>
             <div class="col" style="display: flex; align-items: center; height: 100%; justify-content: center;">
                 <p>Local Time: <span id="local-time"></span></p>
             </div>
             <div class="col" style="display: flex; align-items: center; height: 100%; justify-content: center;">
                 <p>PST Time: <span id="pst-time"></span></p>    
+            </div>
+            <div class="col" style="display: flex; align-items: center; height: 100%; justify-content: center;">
+                <h4>LAUNCH N°007</h4>    
             </div>
             <script>
                 // Function to display current time in local and PST timezone
@@ -311,42 +334,50 @@
             </script>
         </div>    
     </div>
-
-    <!-- This is the container for the MAP visualizator  -->
+    <!-- Start of the containers in the dashboard -->
+    <!-- This is the container for the MAP visualizator, here the layers are being added  -->
      <div class="big-container-wrappermap -fluid" id="Mapviewer">
         <p class="h4 text-center mb-3">Map/KML & KMZ Viewer</p>
-
-        <!-- File Input -->
+        <!-- Funtionality buttons in the dashboard left -->
         <div class="d-flex justify-content-center mb-3">
             <input type="file" id="fileInput" class="form-control w-50" accept=".kml,.kmz" multiple />
             <button id="toggleRefreshButton" class="btn btn-secondary ms-2">Stop Refresh</button>
+            <button id="SeeAllPointsButton" class="btn btn-danger ms-2">SeeAllPoints</button>
+            <button id="ModeAutomaticButton" class="btn btn-success ms-2">AutomaticMode</button>
+            <button id="Mosaiccreation" class="btn btn-danger ms-2" data-href="/mosaic-options">CreateMosaic</button>
         </div>
+        <script>
+            // (in Testing phase) Mosaic button being tested to create automatically a mosaic
+            document.getElementById("Mosaiccreation").addEventListener("click", function () {
+                const href = this.getAttribute("data-href");
+                if (href) {
+                    // Open a new popup window
+                    window.open(href, 'MosaicOptions', 'width=800,height=600,resizable=yes');
+                }
+            });
+        </script>
     
         <!-- Map container -->
         <div id="Map" style="height: 600px; border: 1px solid #ccc; margin-bottom: 15px;"></div>
-    
         <!-- KML/KMZ file list -->
         <div id="kmlFileList" class="list-group"></div>
     
         <script>
+            // (Developed phase) Different funtions and layering options in the dashboard already tested
             // KML viewer map initialization
-
             var openStreetMapLayerKML = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             });
-
             var politicalMapLayerKML = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
                 attribution: '&copy; <a href="https://carto.com/">CARTO</a> contributors'
             });
-
             var topoLayerKML = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; <a href="https://opentopomap.org">OpenTopoMap</a> contributors'
             });
-
             var satelliteLayerKML = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Tiles &copy; Esri, USGS, NASA, <a href="https://www.esri.com/">Esri</a>'
             });            
-            // Create the map and set the default view
+            // First map creation and set the default view (offline works with Java)
             var kmlMap = L.map('Map').setView([0, 0], 2);
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 18,
@@ -359,9 +390,11 @@
                 "Satellite": satelliteLayerKML
             }).addTo(kmlMap);
 
+            // Global marker layer group for efficient management
+            var kmlLayerGroup = L.layerGroup().addTo(kmlMap);
             var kmlLayers = {}; // Object to store KML layers by file name
             var firstKMLLoaded = false; // Flag to center on the first file loaded
-    
+            
             // Handle file input change event
             document.getElementById('fileInput').addEventListener('change', function(event) {
                 var files = event.target.files;
@@ -452,32 +485,37 @@
                 fetch('/load-all-maps')  // Fetch the list of files from the Flask backend
                     .then(response => response.json())  // Parse JSON response
                     .then(files => {
-                        files.forEach(fileName => {
-                            // Construct the file URL
-                            var layerUrl = '/static/KMLmaps/' + fileName;
+                        console.log("Fetched files:", files);  // Log the fetched files
 
+                        // Loop over each file
+                        files.forEach(fileName => {
+                            var layerUrl = '/static/KMLmaps/' + fileName; // Construct the file URL
+
+                            // Handle KML files
                             if (fileName.endsWith('.kml')) {
-                                // Load KML file using omnivore
                                 var newKmlLayer = omnivore.kml(layerUrl)
                                     .on('ready', function() {
-                                        // Add the layer to the map
-                                        kmlMap.addLayer(newKmlLayer);
+                                        console.log("KML Layer loaded:", fileName);
+                                        kmlLayerGroup.addLayer(newKmlLayer);
 
-                                        // Center map on first KML loaded
+                                        // Center map on first KML layer
                                         if (!firstKMLLoaded) {
-                                            kmlMap.fitBounds(newKmlLayer.getBounds());
-                                            firstKMLLoaded = true;  // Mark first KML loaded
+                                            var bounds = newKmlLayer.getBounds();
+                                            console.log("KML Layer Bounds:", bounds);
+                                            kmlMap.fitBounds(bounds);
+                                            firstKMLLoaded = true;  // Mark the first KML as loaded
                                         }
                                     })
-                                    .on('error', function() {
-                                        console.error("Error loading KML file:", fileName);
+                                    .on('error', function(e) {
+                                        console.error("Error loading KML file:", fileName, e);
                                     });
 
-                                // Store layer in kmlLayers object for later reference
+                                // Store the KML layer in the kmlLayers object for later reference
                                 kmlLayers[fileName] = { layer: newKmlLayer, added: true };
+                            }
 
-                            } else if (fileName.endsWith('.kmz')) {
-                                // Load KMZ file using JSZip and omnivore
+                            // Handle KMZ files
+                            else if (fileName.endsWith('.kmz')) {
                                 JSZipUtils.getBinaryContent(layerUrl, function(err, data) {
                                     if (err) {
                                         console.error("Error loading KMZ file:", fileName);
@@ -490,14 +528,14 @@
                                             kmlFile.async('string').then(function(kmlData) {
                                                 var newKmlLayer = omnivore.kml.parse(kmlData)
                                                     .on('ready', function() {
-                                                        // Add the layer to the map
-                                                        kmlMap.addLayer(newKmlLayer);
+                                                        console.log("KML from KMZ loaded:", fileName);
+                                                        kmlLayerGroup.addLayer(newKmlLayer);
                                                     })
-                                                    .on('error', function() {
-                                                        console.error("Error loading KML from KMZ:", fileName);
+                                                    .on('error', function(e) {
+                                                        console.error("Error loading KML from KMZ:", fileName, e);
                                                     });
 
-                                                // Store layer in kmlLayers object for later reference
+                                                // Store the KML layer in the kmlLayers object
                                                 kmlLayers[fileName] = { layer: newKmlLayer, added: true };
                                             });
                                         } else {
@@ -510,18 +548,16 @@
                     })
                     .catch(error => console.error('Error loading maps:', error));
             }
+            
+            //Opening all KML files in the Maps folder
+            loadAllMaps();
 
-
-            // Call the function to load all maps when the page loads
-            window.onload = function() {
-                loadAllMaps();  // Auto-load KML/KMZ files on page load
-            };   
             // Function to add the KML/KMZ layer to the map
             function addLayerToMap(fileName) {
                 var layerEntry = kmlLayers[fileName];
                 if (!layerEntry.added) {
-                    layerEntry.layer.addTo(kmlMap);
-    
+                    kmlLayerGroup.addLayer(layerEntry.layer); // Add KML layer to the layerGroup
+
                     // If it's the first added KML/KMZ, center the map
                     if (!firstKMLLoaded) {
                         kmlMap.fitBounds(layerEntry.layer.getBounds());
@@ -541,140 +577,288 @@
                     alert("Please add the file to the map first.");
                 }
             }
-                    // Function to fetch GPS data and update the map
-            
-             /*let latestImageUrl = ''; // Global variable to store the latest image URL*/
-            function fetchGpsData() {
-                fetch('/api/gps-data')
-                    .then(response => response.json())
-                    .then(gpsData => {
-                        console.log(gpsData);  // Log fetched data for debugging
-
-                        /*// Clear existing markers
-                        map.eachLayer(function (layer) {
-                            if (layer instanceof L.Marker) {
-                                map.removeLayer(layer);
-                            }
-                        });*/
-
-                        // Loop through the GPS data and add markers
-                        gpsData.forEach(function(data) {
-                            if (data.imageUrl) { // Change here from img_url to imageUrl
-                                console.log(`Adding marker for: ${data.photo_name}, Lat: ${data.lat}, Lon: ${data.lon}`); // Debugging coordinates
-                                // Add the marker for the GPS location
-                                var marker = L.marker([data.lat, data.lon]).addTo(kmlMap);
-                                
-                                // Bind the popup with a small image and additional information
-                                marker.bindPopup(
-                                    `<strong>${data.photo_name}</strong><br>` +
-                                    `<img src="${data.imageUrl}" class="popup-image" style="width: 100px; height: auto;"><br>` +
-                                    `Latitude: ${data.lat.toFixed(5)}<br>` +
-                                    `Longitude: ${data.lon.toFixed(5)}<br>` +
-                                    `Altitude: ${data.alt.toFixed(2)} meters`
-                                );
-
-                                // When clicking the marker, show the corresponding larger image in the right container
-                                marker.on('click', function() {
-                                    document.getElementById('large-photo').src = data.imageUrl; // Change here from img_url to imageUrl
-                                });
-                            } else {
-                                console.warn(`Image URL not found for: ${data.photo_name}`);
-                            }
-                        });
-                        //zoom the last point
-                        if (gpsData.length > 0) {
-                        var lastPoint = gpsData[gpsData.length - 1];
-                        var zoomLevel = 15; // Adjust the zoom level here
-                        kmlMap.setView([lastPoint.lat, lastPoint.lon], zoomLevel);
-                    }
-                    })
-                    .catch(error => console.error('Error fetching GPS data:', error));
-            }
-
-            // Fetch data initially and set an interval to fetch every 5 seconds
-            fetchGpsData();
-            let refreshInterval = setInterval(fetchGpsData, 1000);  // Start the refresh interval by default
-            let isRefreshing = true;  // Track whether refreshing is enabled
-
-            // Toggle function for starting and stopping the refresh interval
-            document.getElementById('toggleRefreshButton').addEventListener('click', function() {
-                if (isRefreshing) {
-                    clearInterval(refreshInterval);  // Stop refreshing
-                    this.textContent = 'Start Refresh';  // Change button label
-                } else {
-                    refreshInterval = setInterval(fetchGpsData, 1000);  // Start refreshing again
-                    this.textContent = 'Stop Refresh';  // Change button label
-                }
-                isRefreshing = !isRefreshing;  // Toggle the refreshing state
-            });
-
-        </script>
+         </script>
     </div>
 
-    <!-- This is the container for the ancillary visualizator  -->
+    <!-- Container for the 1st ancillary visualizator displaying: Last/GPS Canon Image, Secundary plots button and the AltitudeVSTime plot  -->
     <div class="big-container-wrapperanc -fluid">
+        <!-- Container for the Canon photos funtionality -->
         <div class="container-Photo -wrapper">
-            <!--<img id="large-photo" src="" alt="Click a marker to view the photo" />-->
-            <button id="refresh-latest-btn">Show Latest Image</button>
+            <button id="refresh-latest-btn" class="btn btn-secondary ms-2">Show Latest Image</button>
+            <button id="showPlotsBtn" class="btn btn-primary ms-2">Show Variable Plots</button>
+            <!-- Large photo -->
             <img id="large-photo" src="" alt="Click a marker to view the photo" />
+            <div id="loading-indicator" style="display: none;">Loading...</div>  <!-- Loading text indicator -->
+
             <script>
+                // (Tested phase) functionalities to not freeze the webnavigators and cache
+                // Global variable to store the fetched GPS data
+                let gpsDataCache = [];
+                let refreshInterval;
+                let isRefreshing = true;
+                let showAllPoints = false;  // Flag to determine whether to show all points or just the latest 20
+                let markerLayer = L.layerGroup().addTo(kmlMap);  // Marker layer for GPS points
+                let imageCache = {};  // Cache to store preloaded images
+                let gpsRefreshInterval;    // For GPS data refresh
+                let latestImageInterval;   // For image refresh
+                let isGpsRefreshing = true;  // To track GPS refresh status
+
+                // Function to fetch GPS data and update the map
+                function fetchGpsData(mode = 'last20') {  // Default mode is 'last20'
+                    fetch(`/api/gps-data?mode=${mode}`)  // Include mode as a query parameter
+                        .then(response => response.json())
+                        .then(gpsData => {
+                            console.log(gpsData); // Log fetched data for debugging
+                            
+                            // Store the latest GPS data in cache
+                            gpsDataCache = gpsData;
+                            
+                            // Remove all markers from the map (this clears old markers)
+                            markerLayer.clearLayers();
+                            
+                            // Loop through the GPS data and add/update markers
+                            const dataToDisplay = showAllPoints ? gpsData : gpsData.slice(-20);  // Show only last 20 points
+                            
+                            dataToDisplay.forEach(function(data) {
+                                if (data.imageUrl) {
+                                    console.log(`Adding marker for: ${data.photo_name}, Lat: ${data.lat}, Lon: ${data.lon}`);
+                                
+                                    // Check if the image is already cached, if not, preload it
+                                    if (!imageCache[data.imageUrl]) {
+                                        const img = new Image();
+                                        img.src = data.imageUrl; // Preload the image
+                                        imageCache[data.imageUrl] = img;
+                                    }
+                                
+                                    // Create the marker
+                                    let marker = L.marker([data.lat, data.lon]);
+                                
+                                    // Bind the popup with image and data
+                                    marker.bindPopup(
+                                        `<strong>${data.photo_name}</strong><br>` +
+                                        `<img src="${data.imageUrl}" class="popup-image" style="width: 80px; height: 80px; loading="lazy";"><br>` +
+                                        `Latitude: ${data.lat.toFixed(5)}<br>` +
+                                        `Longitude: ${data.lon.toFixed(5)}<br>` +
+                                        `Altitude: ${data.alt.toFixed(2)} meters`
+                                    );
+                                
+                                    // Add click event to show the larger image
+                                    marker.on('click', function() {
+                                        // Display the large photo in the designated area
+                                        document.getElementById('large-photo').src = data.imageUrl;
+                                    });
+                                
+                                    // Add marker to the layer group
+                                    markerLayer.addLayer(marker);
+                                } else {
+                                    console.warn(`Image URL not found for: ${data.photo_name}`);
+                                }
+                            });
+                            
+                            // Zoom to the last point
+                            if (gpsData.length > 0) {
+                                let lastPoint = gpsData[gpsData.length - 1];
+                                kmlMap.setView([lastPoint.lat, lastPoint.lon], 30); // Adjust zoom level as needed
+                            }
+                        })
+                        .catch(error => console.error('Error fetching GPS data:', error));
+                }
+                /* BUTTONS THAT WERE NOT WORKING
+                // See All Points button - Display all points and stop refreshing
+                document.getElementById('SeeAllPointsButton').addEventListener('click', function() {
+                    showAllPoints = true;  // Set flag to show all points
+                    fetchGpsData('all');  // Pass 'all' mode to fetch all points immediately
+                    clearInterval(refreshInterval);  // Stop automatic refreshing
+                    document.getElementById('toggleRefreshButton').textContent = 'Start Refresh'; // Ensure button shows start
+                    isRefreshing = false;  // Set refreshing to false
+                });
+
+                // Mode Automatic button - Only show the last 20 points with automatic refreshing
+                document.getElementById('ModeAutomaticButton').addEventListener('click', function() {
+                    showAllPoints = false;  // Set flag to show last 20 points
+                    fetchGpsData();  // Fetch and display the last 20 points immediately
+                    clearInterval(refreshInterval); // Ensure previous interval is cleared
+                    refreshInterval = setInterval(fetchGpsData, 6000);  // Start automatic refreshing again 30000
+                    document.getElementById('toggleRefreshButton').textContent = 'Stop Refresh';  // Ensure button shows stop
+                    isRefreshing = true;  // Set refreshing to true
+                });
+                // Toggle function for starting and stopping the refresh interval
+                document.getElementById('toggleRefreshButton').addEventListener('click', function () {
+                    if (isGpsRefreshing) {
+                        // Stop refreshing
+                        clearInterval(gpsRefreshInterval);
+                        this.textContent = 'Start Refresh';
+                        console.log('GPS data refreshing stopped.');
+                    } else {
+                        // Start refreshing
+                        gpsRefreshInterval = setInterval(() => fetchGpsData(), 6000); // Refresh every 6 seconds
+                        this.textContent = 'Stop Refresh';
+                        console.log('GPS data refreshing started.');
+                    }
+                    isGpsRefreshing = !isGpsRefreshing; // Toggle the status
+                });
+                // Initialize refreshing when the page loads
+                gpsRefreshInterval = setInterval(() => fetchGpsData(), 1500); // Initial interval*/
+
+                /*document.addEventListener('DOMContentLoaded', function() {
+                    // Your existing code to fetch GPS data and manage buttons
+
+                    // See All Points button - Display all points and stop refreshing
+                    document.getElementById('SeeAllPointsButton').addEventListener('click', function() {
+                        showAllPoints = true;  // Set flag to show all points
+                        fetchGpsData('all');  // Pass 'all' mode to fetch all points immediately
+                        clearInterval(refreshInterval);  // Stop automatic refreshing
+                        console.log('Showing all the points')
+                        document.getElementById('toggleRefreshButton').textContent = 'Start Refresh'; // Ensure button shows start
+                        isRefreshing = false;  // Set refreshing to false
+                    });
+
+                    // Mode Automatic button - Only show the last 20 points with automatic refreshing
+                    document.getElementById('ModeAutomaticButton').addEventListener('click', function() {
+                        showAllPoints = false;  // Set flag to show last 20 points
+                        fetchGpsData();  // Fetch and display the last 20 points immediately
+                        clearInterval(refreshInterval); // Ensure previous interval is cleared
+                        console.log('Automatic option started again')
+                        refreshInterval = setInterval(fetchGpsData, 1500);  // Start automatic refreshing again 30000
+                        document.getElementById('toggleRefreshButton').textContent = 'Stop Refresh';  // Ensure button shows stop
+                        isRefreshing = true;  // Set refreshing to true
+                    });
+
+                    // Toggle function for starting and stopping the refresh interval
+                    document.getElementById('toggleRefreshButton').addEventListener('click', function () {
+                        if (isRefreshing) {
+                            // Stop refreshing
+                            clearInterval(refreshInterval);
+                            this.textContent = 'Start Refresh';
+                            console.log('GPS data refreshing stopped.');
+                        } else {
+                            // Start refreshing
+                            refreshInterval = setInterval(fetchGpsData, 1500); // Refresh every 6 seconds
+                            this.textContent = 'Stop Refresh';
+                            console.log('GPS data refreshing started.');
+                        }
+                        isRefreshing = !isRefreshing; // Toggle the status
+                    });
+
+                    // Initialize refreshing when the page loads
+                    refreshInterval = setInterval(() => fetchGpsData(), 1500); // Initial interval
+                });*/
+                document.addEventListener('DOMContentLoaded', function() {
+                    // See All Points button - Display all points and stop refreshing
+                    document.getElementById('SeeAllPointsButton').addEventListener('click', function() {
+                        showAllPoints = true;  // Set flag to show all points
+                        fetchGpsData('all');  // Pass 'all' mode to fetch all points immediately
+                        console.log('Showing all the points')
+                        clearInterval(gpsRefreshInterval);  // Stop GPS data refreshing
+                        document.getElementById('toggleRefreshButton').textContent = 'Start Refresh'; // Ensure button shows start
+                        isGpsRefreshing = false;  // Set GPS refreshing to false
+                    });
+
+                    // Mode Automatic button - Only show the last 20 points with automatic refreshing
+                    document.getElementById('ModeAutomaticButton').addEventListener('click', function() {
+                        showAllPoints = false;  // Set flag to show last 20 points
+                        fetchGpsData();  // Fetch and display the last 20 points immediately
+                        console.log('Going back to the automtic mode')
+                        clearInterval(gpsRefreshInterval); // Ensure previous interval is cleared
+                        gpsRefreshInterval = setInterval(fetchGpsData, 1500);  // Start automatic refreshing again 30000
+                        document.getElementById('toggleRefreshButton').textContent = 'Stop Refresh';  // Ensure button shows stop
+                        isGpsRefreshing = true;  // Set GPS refreshing to true
+                    });
+
+                    // Toggle function for starting and stopping the GPS refresh interval
+                    document.getElementById('toggleRefreshButton').addEventListener('click', function () {
+                        if (isGpsRefreshing) {
+                            // Stop refreshing
+                            clearInterval(gpsRefreshInterval);
+                            this.textContent = 'Start Refresh';
+                            console.log('GPS data refreshing stopped.');
+                        } else {
+                            // Start refreshing
+                            gpsRefreshInterval = setInterval(() => fetchGpsData(), 1500); // Refresh every 6 seconds
+                            this.textContent = 'Stop Refresh';
+                            console.log('GPS data refreshing started.');
+                        }
+                        isGpsRefreshing = !isGpsRefreshing; // Toggle the status
+                    });
+
+                    // Initialize refreshing when the page loads
+                    gpsRefreshInterval = setInterval(() => fetchGpsData(), 1500); // Initial interval
+                });
+
+                //GPS Marker click functionality (tested) , sometimes the image loading takes some time,
+                //also thumbnails can be implemented in the future.
+
                 let markerClicked = false;  // Flag to track if a marker has been clicked
                 let latestImageUrl = "";    // Store the latest image URL to show when needed
-                let latestImageInterval;    // Variable to store the interval for refreshing the image
+                let fetchingLatestImage = false;  // Flag to check if fetch is in progress
 
                 // Function to fetch the latest image URL from Flask
                 function fetchLatestImage() {
+                    if (fetchingLatestImage) {
+                        return;  // Prevent duplicate fetch requests
+                    }
+                    fetchingLatestImage = true;  // Mark the fetch as in progress
+                    document.getElementById('loading-indicator').style.display = "block"; // Show loading indicator
+
                     fetch('/latest-image')
                         .then(response => response.json())
                         .then(data => {
                             if (data.latest_image_url) {
                                 latestImageUrl = data.latest_image_url;
-                                // If no marker has been clicked, show the latest image
+
+                                // Immediately show the latest image
                                 if (!markerClicked) {
-                                    document.getElementById('large-photo').src = latestImageUrl;
+                                    const largePhoto = document.getElementById('large-photo');
+                                    largePhoto.src = latestImageUrl;
+                                    largePhoto.alt = "Latest Image";  // Optional: update alt text
                                 }
                             } else {
                                 console.error('No latest image found.');
                             }
                         })
-                        .catch(error => console.error('Error fetching latest image:', error));
-                }
-
-                // Function to start the periodic refresh of the latest image
-                function startRefreshingLatestImage() {
-                    if (latestImageInterval) {
-                        clearInterval(latestImageInterval);  // Clear any existing interval
+                        .catch(error => console.error('Error fetching latest image:', error))
+                        .finally(() => {
+                            fetchingLatestImage = false;  // Reset fetch flag after completion
+                            document.getElementById('loading-indicator').style.display = "none"; // Hide loading indicator
+                        });
                     }
-                    latestImageInterval = setInterval(fetchLatestImage, 5000);  // Start refreshing the image every 5 seconds
-                }
+                    // Function to start the periodic refresh of the latest image
+                    function startRefreshingLatestImage() {
+                        if (latestImageInterval) {
+                            clearInterval(latestImageInterval);  // Clear any existing interval
+                        }
+                        latestImageInterval = setInterval(fetchLatestImage, 1500);  // Refresh every 5 seconds
+                    }
 
-                // Call this function when the marker is clicked and pass the marker's image URL
-                function onMarkerClick(imageUrl) {
-                    markerClicked = true;  // Stop showing the latest image
-                    clearInterval(latestImageInterval);  // Stop the periodic refresh
-                    document.getElementById('large-photo').src = imageUrl;  // Display the marker's image
-                }
-
-                // Button to refresh and start showing the latest image again
-                document.getElementById('refresh-latest-btn').addEventListener('click', function() {
-                    markerClicked = false;  // Reset the markerClicked flag
-                    fetchLatestImage();  // Immediately show the latest image
-                    startRefreshingLatestImage();  // Start periodic updates
-                });
-
-                // Initialize the page by loading the latest image and start periodic updates
-                window.onload = function() {
-                    fetchLatestImage();  // Load the latest image once when the page loads
-                    startRefreshingLatestImage();  // Start periodic refresh of the latest image
-                };
+                    // Call this function when the marker is clicked and pass the marker's image URL
+                    function onMarkerClick(imageUrl) {
+                        markerClicked = true;
+                        clearInterval(latestImageInterval); // Prevent conflicts with periodic updates
+                        if (imageUrl) {
+                            document.getElementById('large-photo').src = imageUrl;
+                        } else {
+                            console.error('Invalid image URL:', imageUrl);
+                        }
+                    }
+                    // Button to refresh and start showing the latest image again
+                    document.getElementById('refresh-latest-btn').addEventListener('click', function() {
+                        markerClicked = false;  // Reset the markerClicked flag
+                        fetchLatestImage();  // Immediately show the latest image
+                        startRefreshingLatestImage();  // Start periodic updates
+                    });
+                    // Initialize the page by loading the latest image and start periodic updates
+                    window.onload = function() {
+                        fetchLatestImage();  // Load the latest image once when the page loads
+                        startRefreshingLatestImage();  // Start periodic refresh of the latest image
+                    };
 
             </script>
         </div>
+
+        <!--<h4>Graph Altitude vs Time</h4> -->
         <div class="container-Photo -wrapper">
-            <!--<h4>Graph Altitude vs Time</h4> -->
             <div class="image-container">
                 {% if plot_exists %}
-                <!--<img id="zoomable-image" src="{{ url_for('static', filename='altitude_vs_time_plot.png') }}" alt="Altitude vs Time Plot">-->
                 <iframe id="plotFrame" src="{{ url_for('root_file', filename='altitude_vs_time_plot.html') }}" width="100%" height="300px" frameborder="0" onerror="this.style.display='none';"></iframe>   
                 {% else %}
                 <p id="iframe-error" style="display: none; color: gray;">Plot could not be loaded.</p>
@@ -700,61 +884,168 @@
         }
     
         // Check for updates every second
-        setInterval(checkForUpdates, 1000);
+        setInterval(checkForUpdates, 1500);
     </script>  
 
     </div>
-    <!-- This is the container for the other info  -->
-    <div class="big-container-wrapperother -fluid" id="Mapviewer">
+    <!-- Container to receive the variables in real time from the Canon stamps, GPS, health variables  -->
+    <div class="big-container-wrapperother" >
         <div class="container-Tel -wrapper">
             <h5>Balloon info in real time</h5>
-            <div class="row">
-                <!--<div class="col" id="microloon-data"></div>-->
-                <div class="col" id="telemetry-data">  </div>
+            <div class="row g-2">
                 <div class="col">
-                    <div id="trajectory-data" ></div>
-                    <div id="desired-data" class="data-section"></div>
-                </div>              
+                    <!-- GPS data with timestamp  -->
+                    <div id="telemetry-data" ></div>
+                </div>    
+                <div class="col">
+                    <!-- Pitch and roll data with timestamp  -->
+                    <div id="trajectory-data" ></div>    
+                </div>
+                <!-- Desired pitch and roll with timestamp commanded by operators -->
+                <div id="desired-data" class="data-section"></div>              
             </div>
+        </div>
+        <!-- Calling the health data here, to be at the bottom-rigth dashboard part-->
+        <div class="container-Tel -wrapper">
+            <h5>Health information</h5>
+            <div id="microloon-data" class="microloon-box"></div>
+        </div>
         <script>
+            // Pop-up window which shows 3 graphs: Speed graph, pich/roll grap, and thermistors1,2,3,4 grap
+            
+               // When the button is clicked, open a new window with tabs for the plots plus the code of that window is here
+                $("#showPlotsBtn").click(function () {
+                // Trigger the backend function to generate the plot
+                fetch('/generate-plots')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Open a new popup window
+                            const popupWindow = window.open('', 'Balloon Info and Plots', 'width=1000,height=800');
+
+                            // HTML structure for the popup window with a div for the plot
+                            const popupContent = `
+                                <!DOCTYPE html>
+                                <html lang="en">
+                                <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <title>Balloon Info and Plots</title>
+                                    <style>
+                                        body {
+                                            font-family: Arial, sans-serif;
+                                            margin: 0;
+                                            padding: 0;
+                                        }
+                                        h1 {
+                                            background-color: #4CAF50;
+                                            color: white;
+                                            text-align: center;
+                                            margin: 0;
+                                            padding: 10px;
+                                        }
+                                        .content {
+                                            padding: 10px;
+                                        }
+                                    </style>
+                                </head>
+                                <body>
+                                    <h1>Balloon Variable Plots</h1>
+                                    <div class="content">
+                                        <div class="plot" id="gpsPlot">${data.gpsPlotHtml}</div>
+                                        <div class="plot" id="trajPlot">${data.trajPlotHtml}</div>
+                                        <div class="plot" id="microPlot">${data.microPlotHtml}</div>
+                                    </div>
+                                </body>
+                                </html>
+                            `;
+
+                            // Write the content to the popup window
+                            popupWindow.document.open();
+                            popupWindow.document.write(popupContent);
+                            popupWindow.document.close();
+                        } else {
+                            alert('Error generating plots. Please try again later.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching plot data:', error);
+                        alert('Failed to load the plots.');
+                    });
+            });
+                
+            // Constants for the telemetry variable ranges, comming from the BTC IT (only change based on requests)
                 const telemetryLimits = {
-                    therm_1: { min: 0, max: 99 },
-                    therm_2: { min: 0, max: 99 },
-                    therm_3: { min: -3, max: 3 },
-                    therm_4: { min: 0, max: 99 },
-                    yaw_degree: { min: 0, max: 99 },
-                    pitch_degree: { min: 0, max: 99 },
-                    yaw_pn: { min: 0, max: 99 },
-                    pitch_pn: { min: 0, max: 99 },
-                    heading: { min: 0, max: 99 },
-                    course: { min: 0, max: 99 }
+                    therm_1: { min: 0, max: 60 },
+                    therm_2: { min: 0, max: 60 },
+                    therm_3: { min: 0, max: 60 },
+                    therm_4: { min: 0, max: 60 },
+                    yaw_degree: { min: 130, max: 230 },
+                    pitch_degree: { min: 130, max: 230 },
+                    yaw_pn: { min: -50, max: 50 },
+                    pitch_pn: { min: -50, max: 50 },
+                    heading: { min: 0, max: 360 },
+                    course: { min: 0, max: 360 }
                 };
-                // Function to TEST
-                /*function getThermistorStatusColor(value, min, max) {
+
+                function getRowColor(value, min, max) {
+                    // If the value is below the range, return muted gold
                     if (value < min) {
-                        return "green"; // Below minimum
-                    } else if (value > max) {
-                        return "red"; // Above maximum
-                    } else if (value >= min && value <= max) {
-                        return "blue"; // Within range
+                        return "#FFC107"; // Muted gold (yellow)
                     }
-                }*/
 
-                function getThermistorStatusColor(value, min, max) {
-                    // Calculate the one-third intervals for the range
-                    const range = max - min;
-                    const third = range / 3;
-
-                    if (value < min + third) {
-                        return "green"; // Value is in the lower third (0 to 3)
-                    } else if (value < min + 2 * third) {
-                        return "blue"; // Value is in the middle third (4 to 8)
-                    } else if (value <= max) {
-                        return "red"; // Value is in the upper third (9 to 12)
+                    // If the value is above the range, return deep crimson
+                    if (value > max) {
+                        return "#D32F2F"; // Deep crimson (red)
                     }
-                    return "gray"; // Default color if the value is outside the range (error handling)
+
+                    // If the value is within the range, return no color
+                    return ""; // No color
                 }
-                // Function to fetch the latest telemetry data
+                // Object to track the last known values and timestamps for each variable
+                const variableState = {
+                    therm_1: { baseline: null, baselineTimestamp: null },
+                    therm_2: { baseline: null, baselineTimestamp: null },
+                    therm_3: { baseline: null, baselineTimestamp: null },
+                    therm_4: { baseline: null, baselineTimestamp: null },
+                    yaw_degree: { baseline: null, baselineTimestamp: null },
+                    pitch_degree: { baseline: null, baselineTimestamp: null },
+                    yaw_pn: { baseline: null, baselineTimestamp: null },
+                    pitch_pn: { baseline: null, baselineTimestamp: null },
+                    heading: { baseline: null, baselineTimestamp: null },
+                    course: { baseline: null, baselineTimestamp: null }
+                };
+
+                // Stalled check function
+                function isVariableStale(variable, newValue) {
+                    const now = new Date().getTime();
+                    const state = variableState[variable];
+
+                    // Initialize baseline if it doesn't exist
+                    if (state.baseline === null) {
+                        state.baseline = newValue;
+                        state.baselineTimestamp = now;
+                        return false; // Not stale since it's the first value
+                    }
+
+                    // Check if 1 minute has passed since the baseline was set (To be set after tests)
+                    const elapsedTime = now - state.baselineTimestamp;
+                    if (elapsedTime > 180000) { //3 min testing
+                        // Compare the new value with the baseline
+                        if (state.baseline === newValue) {
+                            return true; // Stale: Value hasn't changed in 1 minute
+                        } else {
+                            // Update baseline if value has changed
+                            state.baseline = newValue;
+                            state.baselineTimestamp = now;
+                            return false; // Not stale since the value has changed
+                        }
+                    }
+
+                    return false; // Not stale since 1 minute hasn't passed
+                }
+
+                // Function to fetch the latest microloon-health data , this is receiving around every 2 minutes
                 function fetchLatestMicroloon() {
                 $.ajax({
                     url: "/latest-microloon-data",
@@ -763,19 +1054,36 @@
                         if (data.error) {
                             $("#microloon-data").text("No microloon data available.");
                         } else {
+                            //Get row color dinamically
+                            // Calculate row colors for each variable
+                            const therm1Color = getRowColor(data.therm_1, telemetryLimits.therm_1.min, telemetryLimits.therm_1.max);
+                            const therm2Color = getRowColor(data.therm_2, telemetryLimits.therm_2.min, telemetryLimits.therm_2.max);
+                            const therm3Color = getRowColor(data.therm_3, telemetryLimits.therm_3.min, telemetryLimits.therm_3.max);
+                            const therm4Color = getRowColor(data.therm_4, telemetryLimits.therm_4.min, telemetryLimits.therm_4.max);
+                            const yawColor = getRowColor(data.yaw, telemetryLimits.yaw_degree.min, telemetryLimits.yaw_degree.max);
+                            const pitchColor = getRowColor(data.pitch, telemetryLimits.pitch_degree.min, telemetryLimits.pitch_degree.max);
+                            const headingColor = getRowColor(data.heading, telemetryLimits.heading.min, telemetryLimits.heading.max);
+                            const courseColor = getRowColor(data.course, telemetryLimits.course.min, telemetryLimits.course.max);
+
+
+                            const isTherm1Stale = isVariableStale('therm_1', data.therm_1);
+                            // Update the HTML with color-coded rows
                             $("#microloon-data").html(`
+                                <!-- Timestamp Row -->
                                 <div class="row">
-                                    <div class="row-md-6">
+                                    <div class="col-md-12; padding: 1px;">
                                         <p><strong>Timestamp:</strong> ${data.timestamp}</p>
                                     </div>
                                 </div>
+                                
+                                <!-- Variables Grid with Two Columns -->
                                 <div class="row">
-                                    <div class="col">
-                                        <p><strong>Thermistor1:</strong> ${parseFloat(data.therm_1).toFixed(2)} <span class="status-indicator" style="background-color: ${getThermistorStatusColor(data.therm_1, telemetryLimits.therm_1.min, telemetryLimits.therm_1.max)};"></span><br>
-                                            (<strong>Range:</strong>
-                                            <span class="green-text">${telemetryLimits.therm_1.min}</span> – 
-                                            <span class="red-text">${telemetryLimits.therm_1.max}</span>)</p>
-                                        <p><strong>Thermistor2:</strong> ${parseFloat(data.therm_2).toFixed(2)}<br>
+                                    <!-- First Column (Thermistors) -->
+                                    <div class="col-md-6">
+                                        <div class="row" style="background-color: ${therm1Color}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Thermistor1:</strong> ${parseFloat(data.therm_1).toFixed(2)}
+                                                ${isVariableStale('therm_1', data.therm_1) ? '<span style="color: red; font-weight: bold; font-size: 10 px;">(STALLED)</span>' : ''}                                         
+                                                <br>
                                                     (<span class="range-indicator green-text">
                                                         ${telemetryLimits.therm_1.min} 
                                                         <span class="range-label">Min</span>
@@ -783,28 +1091,115 @@
                                                     <span class="range-indicator red-text">
                                                         ${telemetryLimits.therm_1.max}
                                                         <span class="range-label">Max</span>
-                                                    </span>)</p>
-                                        <p><strong>Thermistor3:</strong> ${parseFloat(data.therm_3).toFixed(2)}
-                                                <span class="status-indicator" style="background-color: ${getThermistorStatusColor(data.therm_3, telemetryLimits.therm_3.min, telemetryLimits.therm_3.max)};"></span></p>
-                                        <p><strong>Thermistor4:</strong> ${parseFloat(data.therm_4).toFixed(2)}</p>
+                                                    </span>)</span></span></p>
+                                        </div>
+                                        <div class="row" style="background-color: ${therm2Color}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Thermistor2:</strong> ${parseFloat(data.therm_2).toFixed(2)}
+                                                ${isVariableStale('therm_2', data.therm_2) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''} 
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.therm_2.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.therm_2.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></p>
+                                        </div>
+                                        <div class="row" style="background-color: ${therm3Color}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Thermistor3:</strong> ${parseFloat(data.therm_3).toFixed(2)}
+                                                ${isVariableStale('therm_3', data.therm_3) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''} 
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.therm_3.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.therm_3.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></span></p>
+                                        </div>
+                                        <div class="row" style="background-color: ${therm4Color}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Thermistor4:</strong> ${parseFloat(data.therm_4).toFixed(2)}
+                                                ${isVariableStale('therm_4', data.therm_4) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''} 
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.therm_4.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.therm_4.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></span></p>
+                                        </div>
                                     </div>
-                                    <div class="col">
-                                        <p><strong>Yaw:</strong> ${parseFloat(data.yaw).toFixed(2)}°</p>
-                                        <p><strong>Pitch:</strong> ${parseFloat(data.pitch).toFixed(2)}°</p>
-                                        <p><strong>Heading:</strong> ${parseFloat(data.heading).toFixed(2)}</p>
-                                        <p><strong>Course:</strong> ${parseFloat(data.course).toFixed(2)}</p>
+
+                                    <!-- Second Column (Yaw, Pitch, Heading, Course) -->
+                                    <div class="col-md-6">
+                                        <div class="row" style="background-color: ${yawColor}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Yaw:</strong> ${parseFloat(data.yaw).toFixed(2)}°
+                                                ${isVariableStale('yaw_degree', data.yaw) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''}
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.yaw_degree.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.yaw_degree.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></span></p>
+                                        </div>
+                                        <div class="row" style="background-color: ${pitchColor}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Pitch:</strong> ${parseFloat(data.pitch).toFixed(2)}°
+                                                ${isVariableStale('pitch_degree', data.pitch) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''}
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.pitch_degree.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.pitch_degree.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></span></p>
+                                        </div>
+                                        <div class="row" style="background-color: ${headingColor}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Heading:</strong> ${parseFloat(data.heading).toFixed(2)}
+                                                ${isVariableStale('heading', data.heading) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''}
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.heading.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.heading.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></span></p>
+                                        </div>
+                                        <div class="row" style="background-color: ${courseColor}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Course:</strong> ${parseFloat(data.course).toFixed(2)}
+                                                ${isVariableStale('course', data.course) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''}
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.course.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.course.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></span></p>
+                                        </div>
                                     </div>
                                 </div>
-
-                            `);
+                                `);
+                            }
+                        },
+                        error: function() {
+                            $("#microloon-data").text("Error loading microloon data.");
                         }
-                    },
-                    error: function() {
-                        $("#microloon-data").text("Error loading microloon data.");
-                    }
-                });
-            }
-                // Function to fetch the latest telemetry data
+                    });
+                }
+
+                // Function to fetch the latest Pitch/Roll data
                 function fetchLatestTrajectory() {
                 $.ajax({
                     url: "/latest-traj-data",
@@ -813,10 +1208,58 @@
                         if (data.error) {
                             $("#trajectory-data").text("No trajectory data available.");
                         } else {
+                            //Get row color dinamically
+                            // Calculate row colors for each variable
+                            const yaw2Color = getRowColor(data.yaw, telemetryLimits.yaw_pn.min, telemetryLimits.yaw_pn.max);
+                            const pitch2Color = getRowColor(data.pitch, telemetryLimits.pitch_pn.min, telemetryLimits.pitch_pn.max);
                             $("#trajectory-data").html(`
-                                <p><strong>Timestamp:</strong> ${data.timestamp}</p>
-                                <p><strong>Yaw(+/-):</strong> ${parseFloat(data.yaw).toFixed(2)}</p>
-                                <p><strong>Pitch(+/-):</strong> ${parseFloat(data.pitch).toFixed(2)}</p>
+                                <!--<p><strong>Timestamp:</strong> ${data.timestamp}</p>-->
+                                <!--<p><strong>Yaw(+/-):</strong> ${parseFloat(data.yaw).toFixed(2)}</p>-->
+                                <!--<p><strong>Pitch(+/-):</strong> ${parseFloat(data.pitch).toFixed(2)}</p>-->
+                                <!--<p><strong>&nbsp;</strong></p>--> <!-- Blank row 1 -->
+                                <!--<p><strong>&nbsp;</strong></p>--> <!-- Blank row 2 -->
+
+
+                                <!-- Timestamp Row -->
+                                <div class="row">
+                                    <div class="col-md-12; padding: 1px;">
+                                        <p><strong>Timestamp:</strong> ${data.timestamp}</p>
+                                    </div>
+                                </div>
+                                <div class="row" style="background-color: ${yaw2Color}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Yaw:</strong> ${parseFloat(data.yaw).toFixed(2)}
+                                                ${isVariableStale('yaw_pn', data.yaw) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''}
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.yaw_pn.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.yaw_pn.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></span></p>
+                                        </div>
+                                        <div class="row" style="background-color: ${pitch2Color}; padding: 1px;">
+                                            <p><span class="text-buffer"><strong>Pitch:</strong> ${parseFloat(data.pitch).toFixed(2)}
+                                                ${isVariableStale('pitch_pn', data.pitch) ? '<span style="color: red; font-weight: bold;font-size: 10 px;">(STALLED)</span>' : ''}
+                                                <br>
+                                                    (<span class="range-indicator green-text">
+                                                        ${telemetryLimits.pitch_pn.min} 
+                                                        <span class="range-label">Min</span>
+                                                    </span> – 
+                                                    <span class="range-indicator red-text">
+                                                        ${telemetryLimits.pitch_pn.max}
+                                                        <span class="range-label">Max</span>
+                                                    </span>)</span></span></p>
+                                        </div>
+                                        <!--<div class="row" ; padding: 1px;">
+                                            <p><span class="text-buffer"><strong> &nbsp</strong></span></p>
+                                        </div>-->
+                                        <!--<div class="row" ; padding: 1px;">
+                                            <p><span class="text-buffer"><strong> &nbsp</strong> &nbsp</span></p>
+                                        </div>-->
+                                    </div>
+                                </div>
 
                             `);
                         }
@@ -852,28 +1295,6 @@
                     }
                 });
             }
-            // Fetch telemetry data every 1 seconds
-            setInterval(fetchLatestTrajectory, 500);
-            // Fetch telemetry data every 1 seconds
-            setInterval(fetchLatestDesired, 500);    
-            // Fetch telemetry data every 1 seconds
-            setInterval(fetchLatestMicroloon, 500);
-            // Fetch telemetry data when the page loads
-            fetchLatestMicroloon();    
-            // Fetch telemetry data when the page loads
-            fetchLatestTrajectory();    
-            // Fetch telemetry data when the page loads
-            fetchLatestDesired();
-
-        </script>    
-        </div>
-        <div class="container-Tel -wrapper">
-            <h5>Health information</h5>
-            <div id="microloon-data" class="microloon-box"></div>
-            <!--<div id="telemetry-data">  </div>-->
-            <!--<h4>Last photo canon information</h4>-->
-        </div>
-        <script>
             // Function to fetch the latest telemetry data
             function fetchLatestTelemetry() {
                 $.ajax({
@@ -887,8 +1308,8 @@
                                 <p><strong>Timestamp:</strong> ${data.timestamp}</p>
                                 <p><strong>Latitude:</strong> ${parseFloat(data.latitude).toFixed(4)}°</p>
                                 <p><strong>Longitude:</strong> ${parseFloat(data.longitude).toFixed(4)}°</p>
-                                <p><strong>Altitude:</strong> ${parseFloat(data.altitude).toFixed(2)} meters</p>
-                                <p><strong>Groundspeed:</strong> ${parseFloat(data.speed).toFixed(3)} m/s</p>
+                                <p><strong>Altitude:</strong> ${parseFloat(data.altitude).toFixed(2)} m</p>
+                                <p><strong>Speed:</strong> ${parseFloat(data.speed).toFixed(2)} m/s</p>
                                 `);
                         }
                     },
@@ -897,11 +1318,81 @@
                     }
                 });
             }
-    
-            // Fetch telemetry data every 1 seconds
-            setInterval(fetchLatestTelemetry, 1000);
-            // Fetch telemetry data when the page loads
+            
+            // Start fetching data every 1.5 seconds for each type
+            let fetchTelemetryInterval;
+            let fetchDesiredInterval;
+            let fetchMicroloonInterval;
+            let fetchLatestTrajectoryInterval;
+
+            // Function to start fetching data at specified intervals
+            function startFetchingData() {
+                console.log("Starting data fetch intervals...");
+                fetchTelemetryInterval = setInterval(fetchLatestTelemetry, 1500);  // Every 1.5 seconds
+                fetchDesiredInterval = setInterval(fetchLatestDesired, 30000);       // Every 30 seconds
+                fetchMicroloonInterval = setInterval(fetchLatestMicroloon, 30000);   // Every 30 seconds
+                fetchLatestTrajectoryInterval = setInterval(fetchLatestTrajectory, 1500);   // Every 1.5 seconds
+            }
+
+            // Function to clear all intervals
+            function stopFetchingData() {
+                console.log("Clearing data fetch intervals...");
+                clearInterval(fetchTelemetryInterval);
+                clearInterval(fetchDesiredInterval);
+                clearInterval(fetchMicroloonIntervalInterval);
+                clearInterval(fetchLatestTrajectory);
+            }
+
+            // Add event listener to stop intervals on page unload
+            window.addEventListener('beforeunload', stopFetchingData);
+
+            // Immediate one-time fetch on page load
             fetchLatestTelemetry();
+            fetchLatestDesired();
+            fetchLatestMicroloon();
+            fetchLatestTrajectory();
+
+            // Start the data fetching intervals
+            startFetchingData();
+
+            //Function using Promise in a single request all the variables, test later if the server will handle it
+            /*
+            function fetchAllData() {
+                Promise.all([
+                    fetch('/latest-balloon-data').then(response => response.json()),
+                    fetch('/latest-desired-data').then(response => response.json()),
+                    fetch('/latest-microloon-data').then(response => response.json()),
+                    fetch('/latest-traj-data').then(response => response.json())
+                ])
+                .then(([balloonData, desiredData, microloonData, trajData]) => {
+                    // Call your existing functions to read the data
+                    fetchLatestTelemetry(balloonData);
+                    fetchLatestDesired(desiredData);
+                    fetchLatestMicroloon(microloonData);
+                    fetchLatestTrajectory(trajData);
+                })
+                .catch(error => console.error('Error fetching all data:', error));
+            }
+
+            function startFetchingData() {
+                console.log("Starting data fetch intervals...");
+                fetchAllDataInterval = setInterval(fetchAllData, 1500);  // Every 1.5 seconds
+            }
+
+            // Function to clear all intervals
+            function stopFetchingData() {
+                console.log("Clearing data fetch intervals...");
+                clearInterval(fetchAllDataInterval);
+            }
+
+            // Add event listener to stop intervals on page unload
+            window.addEventListener('beforeunload', stopFetchingData);
+
+            // Immediate one-time fetch on page load
+            fetchAllData();
+
+            // Start the data fetching intervals
+            startFetchingData();*/
         </script>  
-     </div>          
+     </div>
 </body>
