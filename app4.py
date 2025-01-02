@@ -6,7 +6,7 @@ Created on Thu Oct 24 18:08:06 2024
 """
 
 import os
-from flask import Flask, jsonify, render_template, url_for,send_file, request
+from flask import Flask, jsonify, render_template, url_for,send_file, request, redirect
 from flask_cors import CORS
 from flask import send_from_directory
 import plotly.graph_objects as go
@@ -19,8 +19,17 @@ dashboard_directory = r'C:\Users\Jhon\Desktop\test_Z007_replicaserver'
 image_directory = os.path.join(dashboard_directory, 'test_canon') # Update with your actual path
 canon_directory = r'C:\Users\Jhon\Desktop\test_Z007_replicaserver\CANON_PHOTOS'
 output_directory=r'C:\Users\Jhon\Desktop\test_Z007_replicaserver'
+MOSAIC_FOLDER = os.path.join(dashboard_directory, 'Mosaic')
 
-# INITIALIZATION=============================================================================
+# to activate in the server
+#dashboard_directory = "/home/btc/for_Jhon/my_flask_app/"
+#r'C:\Users\Jhon\Desktop\test_Z007_replicaserver'
+#image_directory = os.path.join(dashboard_directory, 'CANON_PHOTOS') # Update with your actual path
+#canon_directory = os.path.join(dashboard_directory, 'CANON_PHOTOS')
+#output_directory=r'C:\Users\Jhon\Desktop\test_Z007_replicaserver'
+
+# INITIALIZATION
+# =============================================================================
 # Data initialization
 def initialize_files():
     # Define the column headers for each file
@@ -85,6 +94,7 @@ def initialize_empty_plot():
 
     return fig
 
+# to decide which code will initiate the blank files
 # initialize_files()
 # initialize_empty_plot()
 # =============================================================================
@@ -130,7 +140,6 @@ def get_latest_image(directory):
         print(f"Error: {e}")
         return None
 
-#testing
 def read_latest_balloon_data(file_path):
     with open(file_path, 'r') as f:
         lines = f.readlines()[1:]  # Skip the header line
@@ -218,7 +227,6 @@ def read_latest_desired_data(file_path):
                 }
     return None
     
-#testing
 @app.route('/canon_photos/<path:filename>')
 def canon_photos(filename):
     return send_from_directory(canon_directory, filename)
@@ -250,13 +258,13 @@ def index():
     # Ensure the images exist in the folder and append the full path
     for data in gps_data:
         img_path = os.path.join(canon_directory, data['photo_name'])
-        print(f"Checking image path: {img_path}")  # Debugging statement
+        #print(f"Checking image path: {img_path}")  # Debugging statement
         if os.path.exists(img_path):
             data['img_url'] = url_for('canon_photos', filename=data['photo_name'])
-            print(f"Image URL generated: {data['img_url']}")  # Debugging statement
+            #print(f"Image URL generated: {data['img_url']}")  # Debugging statement
         else:
             data['img_url'] = None  # Mark missing images
-            print(f"Image does not exist: {data['photo_name']}")  # Debugging statement
+            #print(f"Image does not exist: {data['photo_name']}")  # Debugging statement
 
     latest_image = get_latest_image(canon_directory)  # Get the latest image URL
     
@@ -290,29 +298,9 @@ def load_all_maps():
 
     # Get all KML and KMZ files in the folder
     files = [f for f in os.listdir(folder_path) if f.endswith('.kml') or f.endswith('.kmz')]
+    print(files)  # Debugging line to check file names
     return jsonify(files)
 
-# New API route to fetch GPS data
-# @app.route('/api/gps-data', methods=['GET'])
-# def api_gps_data():
-#     # Path to db_canon.txt
-#     # file_path = r'C:\Users\Jhon\Desktop\Balloon_Tech_Project\Z006\db_canon.txt'
-#     file_path = os.path.join(dashboard_directory, 'db_postcanon.txt')
-#     gps_data = read_gps_data(file_path)
-    
-#     # Base URL for static images
-#     base_url = '/canon_photos/'
-
-#     # Update gps_data to include full URLs
-#     for data in gps_data:
-#         # Assuming data['imageName'] contains the filename
-#         data['imageUrl'] = f"{base_url}{data['photo_name']}"
-
-#     # Log the fetched GPS data
-#     for data in gps_data:
-#         print(data)  # Debugging statement
-
-#     return jsonify(gps_data)
 @app.route('/api/gps-data', methods=['GET'])
 def api_gps_data():
     # Path to db_postcanon.txt
@@ -327,7 +315,7 @@ def api_gps_data():
         data['imageUrl'] = f"{base_url}{data['photo_name']}"
 
     # Log the fetched GPS data
-    print(f"Fetched {len(gps_data)} GPS points")
+    #print(f"Fetched {len(gps_data)} GPS points")
 
     # Check for mode in query parameters
     mode = request.args.get('mode', 'last20')  # Default mode is 'last20'
@@ -340,7 +328,7 @@ def api_gps_data():
         pass  # gps_data is already all points
 
     return jsonify(gps_data)
-#Testing
+
 @app.route('/latest-balloon-data')
 def latest_balloon_data():
     # pathgps=r'C:\Users\Jhon\Desktop\Balloon_Tech_Project\Z006\To_delete\db_balloon_gps.txt'
@@ -381,6 +369,7 @@ def latest_desired_data():
     else:
         return jsonify({"error": "No data found"}), 404 
 
+#Create the ancillary data for the pop up plots
 @app.route('/generate-plots')
 def generate_plots():
     try:
@@ -491,9 +480,38 @@ def generate_plots():
         print(f"Error generating plots: {e}")
         return jsonify({'success': False, 'message': 'Error generating plots.'})
 
-#Testing
+#Testing the mosaicing
+import subprocess
 
-# to comment later!
+@app.route('/mosaic-options')
+def mosaic_options():
+    # Define the path for your script
+    mosaic_script_path = "C:\\Users\\Jhon\\Desktop\\test_Z007_replicaserver\\Mosaic_DB_toolv10.py"
+
+    # Run the script using subprocess and capture output and errors
+    try:
+        result = subprocess.run(
+            ['python', mosaic_script_path],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        # Log the output and error messages for debugging
+        print("Script Output:", result.stdout)
+        print("Script Error:", result.stderr)
+    except subprocess.CalledProcessError as e:
+        # Handle and log the error
+        return f"Error during mosaic creation: {e}\n{e.stderr}"
+
+    # Assuming the mosaic result is saved as 'mosaic_result.jpg' in the static folder
+    return render_template('mosaic_options.html')
+@app.route('/mosaic/<filename>')
+def serve_mosaic(filename):
+    return send_from_directory(MOSAIC_FOLDER, filename)
+#testting more
+
+# to run the Aarthi dashboard in the other tab
 @app.route('/dashboard2')
 def dashboard2():
     # Any data or logic specific to dashboard 2 can go here
@@ -513,10 +531,10 @@ import pytz
 image_app = Flask('image_dashboard')
 
 # Correct paths to your image directories
-webcam_directory = r'C:\Users\Jhon\Desktop\test_Z007_replicaserver/WEBCAM_PHOTOS'
-flir_directory = r'C:\Users\Jhon\Desktop\test_Z007_replicaserver\FLIR_PHOTOS'
-canon_directory = r'C:\Users\Jhon\Desktop\test_Z007_replicaserver\CANON_PHOTOS'
-log_dir = r'C:\Users\Jhon\Desktop\test_Z007_replicaserver\logs'
+webcam_directory = "/home/btc/for_Jhon/my_flask_app/WEBCAM_PHOTOS/"
+flir_directory ="/home/btc/for_Jhon/my_flask_app/FLIR_PHOTOS/"
+canon_directory = "/home/btc/for_Jhon/my_flask_app/CANON_PHOTOS/"
+log_dir =  "/home/btc/for_Jhon/my_flask_app/logs/"
 
 # Function to get the recent images from a directory
 def get_recent_images(image_directory):
